@@ -1,0 +1,22 @@
+-e .
+
+black
+boto3
+coverage
+flake8
+ipdb
+ipython
+pandas
+psycopg2-binary
+pylint
+pyspark>=2.4.0
+pytest
+pytest-cov
+python-dateutil
+python-dotenv
+pytz>=2019.2
+PyYAML
+tox
+twine
+Unidecode>=1.1.1
+wheel

@@ -1,0 +1,15 @@
+== Parsed Logical Plan ==
+'Filter (('processed_date > 2019-04-15) && ('processed_date <= 2019-04-22))
++- Relation[retailer_barcode#10,sku_x#11,retailer_name_x#12,sku_y#13,retailer_name_y#14,run_id#15,processed_date#16] csv
+
+== Analyzed Logical Plan ==
+retailer_barcode: string, sku_x: string, retailer_name_x: string, sku_y: string, retailer_name_y: string, run_id: string, processed_date: date
+Filter ((cast(processed_date#16 as string) > 2019-04-15) && (cast(processed_date#16 as string) <= 2019-04-22))
++- Relation[retailer_barcode#10,sku_x#11,retailer_name_x#12,sku_y#13,retailer_name_y#14,run_id#15,processed_date#16] csv
+
+== Optimized Logical Plan ==
+Filter ((isnotnull(processed_date#16) && (cast(processed_date#16 as string) > 2019-04-15)) && (cast(processed_date#16 as string) <= 2019-04-22))
++- Relation[retailer_barcode#10,sku_x#11,retailer_name_x#12,sku_y#13,retailer_name_y#14,run_id#15,processed_date#16] csv
+
+== Physical Plan ==
+*(1) FileScan csv [retailer_barcode#10,sku_x#11,retailer_name_x#12,sku_y#13,retailer_name_y#14,run_id#15,processed_date#16] Batched: false, Format: CSV, Location: InMemoryFileIndex[file:/Users/robert.tucker/Code/data/ma..., PartitionCount: 1, PartitionFilters: [isnotnull(processed_date#16), (cast(processed_date#16 as string) > 2019-04-15), (cast(processed_..., PushedFilters: [], ReadSchema: struct<retailer_barcode:string,sku_x:string,retailer_name_x:string,sku_y:string,retailer_name_y:s...\
