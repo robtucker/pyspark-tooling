@@ -385,7 +385,6 @@ class TestCluster(base.BaseTest):
                         {
                             "Classification": "export",
                             "Properties": {
-                                "GEMFURYURL": "https://gemfury-url.com",
                                 "PYSPARK_DEFAULT_PARALLELLISM": "20",
                                 "RUN_ID": run_id,
                             },
@@ -423,7 +422,6 @@ class TestCluster(base.BaseTest):
                         {
                             "Classification": "export",
                             "Properties": {
-                                "GEMFURYURL": "https://gemfury-url.com",
                                 "PYSPARK_DEFAULT_PARALLELLISM": "20",
                                 "RUN_ID": run_id,
                             },

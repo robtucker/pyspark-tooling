@@ -17,9 +17,6 @@ class TestEMRIntegration:
         self.s3_path = f"s3://{self.bucket}/{self.folder}"
         self.s3 = boto3.client("s3")
         self.local_path = "./tests/example"
-        self.gemfury_url = os.getenv("GEMFURYURL")
-        if not self.gemfury_url:
-            raise EnvironmentError("Gemfury URL is required")
         self._pipeline()
 
     def _pipeline(self):
@@ -63,7 +60,7 @@ class TestEMRIntegration:
         # the bootstrap script doesn't have access to the env vars
         # for this reason it must be treated as a template
         # such that secret values are filled at compile time
-        script = bootstrap_script(self.s3_path, self.gemfury_url)
+        script = bootstrap_script(self.s3_path)
 
         self.s3.put_object(
             Body=script.encode(), Bucket=self.bucket, Key=f"{self.folder}/bootstrap.sh"
@@ -108,7 +105,6 @@ class TestEMRIntegration:
             minimum_spark_memory_in_gb=32,
             minimum_vcpus=12,
             env_vars={
-                "GEMFURYURL": os.environ["GEMFURYURL"],
                 "S3_PATH": self.s3_path,
                 "RUN_ID": self.run_id,
             },

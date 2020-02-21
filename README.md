@@ -1,11 +1,9 @@
-# Grada pyspark utils
+# Pyspark Tooling
 
 ## Install
 
 Pyspark utility functions
 
-
-Install using the gemfury url containing your gemfury download token:
 
 ```
 pip install pyspark-tooling

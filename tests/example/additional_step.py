@@ -15,7 +15,7 @@ def additional():
 
     parallellism = get_parallellism()
 
-    spark = get_sql_context(get_default_conf("grada_pyspark_test", parallellism))
+    spark = get_sql_context(get_default_conf("pyspark_tooling_test", parallellism))
 
     log.info("retrieved additional spark context successfullly", spark=spark)
 
