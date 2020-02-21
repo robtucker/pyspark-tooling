@@ -10,7 +10,7 @@ pip install pyspark-tooling
 ```
 
 
-# EMR Deployment
+## EMR Deployment
 
 This package contains certain class methods that are designed to allow you to get up and running with EMR very quickly, even if you are relatively new to EMR.
 
@@ -24,7 +24,7 @@ from pyspark_tooling.emr import Cluster
 
 # define a new cluster 
 cluster = Cluster.from_defaults(
-    # the name of the cluster is normally the name of the application
+    # the name of the cluster
     cluster_name="my_cluster_name", 
     # the s3 path to where the logs will be saved 
     log_uri="s3://my_bucket/logs", 
@@ -63,7 +63,7 @@ The run method will execute the bootstrap scripts followed by the python entrypo
 Note that the cluster will terminate whether it succeeds or fails because `keep_cluster_alive` is set to `False`.
 
 
-## Long running clusters
+### Long running clusters
 
 Its possible that you may wish to have a long running cluster to which you submit jobs repeatedly over time. If this is the case then be sure to pass the `keep_cluster_alive=True` flag to the constructor. You can then use a few different methods to control your cluster:
 
@@ -137,7 +137,7 @@ print(steps_description)
 ```
 
 
-### EMR Infrastructure calculations
+## EMR Infrastructure calculations
 
 The `Cluster.from_defaults()` function uses the `InfrastructureConfig` class to calculate amongst other things:
 
