@@ -27,9 +27,9 @@ cluster = Cluster.from_defaults(
     # the name of the cluster
     cluster_name="my_cluster_name", 
     # the s3 path to where the logs will be saved 
-    log_uri="s3://my_bucket/logs", 
+    log_uri="s3://my-bucket/logs", 
     # a list of bootstrap scripts to run when creating the cluster
-    bootstrap_script_paths=["s3://my_bucket/bootstrap.sh"],
+    bootstrap_script_paths=["s3://my-bucket/bootstrap.sh"],
     # a list of emr env vars that will be availble to spark
     env_vars={
         "APPLICATION_NAME": "my_application",
@@ -50,15 +50,17 @@ cluster = Cluster.from_defaults(
 # start the cluster and run the specified python files
 cluster.run(
     # path to the python entypoint
-    code_entrypoint_path="s3://my_bucket/main.py",  
+    code_entrypoint_path="s3://my-bucket/main.py",  
     # path to your zipped application
-    code_bundle_path="s3://my_bucket/bundle.zip",  
+    code_bundle_path="s3://my-bucket/bundle.zip",  
     # the cluster will execute asynchronously by default
     synchronous=False,  
 )
 ```
 
-The run method will execute the bootstrap scripts followed by the python entrypoint file you have provided. After executing the `run` method, the `Cluster` will execute asynchronously by default. However if you wish to wait to find out if your steps succeeded or not then pass the `synchronous=True` flag to the run method.
+The run method will execute the bootstrap scripts followed by the python entrypoint file you have provided. After executing the `run` method, the `Cluster` will execute asynchronously by default.
+
+However, sometimes you may wish to synchronously monitor your cluster and take appropriate actions based on whether your job succeeds or fails, (for instance, if you are using an orchestration framework like Airflow). In this case you should pass the `synchronous=True` flag.
 
 Note that the cluster will terminate whether it succeeds or fails because `keep_cluster_alive` is set to `False`.
 
@@ -73,21 +75,21 @@ from pyspark_tooling.emr import Cluster, ActionOnFailure
 # create a cluster definition
  cluster = Cluster.from_defaults(
     cluster_name="my_cluster_name",
-    log_uri="s3://my_bucket/logs",
+    log_uri="s3://my-bucket/logs",
     # by default do not terminate the cluster upon job completion
     keep_cluster_alive=True,
  )
 
 # the default steps definitions are:
-# 1) setting up the logs 
-# 2) running the code specified in the entrypoint
+# 1) setting up the logging output
+# 2) running the given code
 default_steps = cluster.get_default_steps(
-    code_entrypoint_path="s3://my_bucket/main.py",  
-    code_bundle_path="s3://my_bucket/bundle.zip",  
+    code_entrypoint_path="s3://my-bucket/main.py",  
+    code_bundle_path="s3://my-bucket/bundle.zip",  
     action_on_failure=ActionOnFailure.Terminate,
 )
 
-# start the cluster and run the given steps
+# start the cluster and run these steps
 cluster.start(default_steps)
 
 # wait for all steps to complete synchronously
@@ -113,6 +115,7 @@ additional_steps = [
 ]
 
 # add the additional step to the cluster
+# you can queue up to 256 steps at a time
 cluster.add_steps(additional_steps)
 
 # again wait for all steps to complete
@@ -157,7 +160,7 @@ There are some key parameters that you can pass to the `InfrastructureConfig` cl
 
 The `InfrastructureConfig` class will choose which type of instance you require and how many you will need, according to a few simple criteria. 
 
-Firstly the `minimum_spark_memory_in_gb` paramter refers to the total memory (across all machines) that is required by your spark jobs, both for execution/storage, as well as for sparks internal processes and reserved memory.
+Firstly the `minimum_spark_memory_in_gb` paramter refers to the total memory (across all machines) that is required by your spark jobs, both for execution/storage, as well as for spark's internal processes and reserved memory.
 
 Normally you should know in advance roughly how much memory you will need, but this can also be a question of trial and error. Note that every row in your RDD is saved in more than one partition for the sake of redundancy, which means the size of your RDD might be much bigger as the size of your original data. If you are doing wide transformations such as joins you will need even more memory to shuffle the data around. As the (official documentation)[https://spark.apache.org/docs/latest/hardware-provisioning.html] points out, the only way to know for sure how big your RDD is is to examine the Storage tab in the Spark UI.
 
@@ -210,17 +213,17 @@ We can break the memory given to spark into 2 sections, which we can think of as
 
 2) `spark_memory_storage_fraction` (default 0.5)
 
-So far we have shown that spark's "usable" memory is actually 75% of sparks memory, which is only 90% of the total memory. However even within the usable memory we have to break the available space into the part that is dedicated to execution i.e. calculations and processing, and the part that is dedicated to storage.
+So far we have shown that spark's "usable" memory is actually 75% of spark's memory, which is only 90% of the total memory. However even within the usable memory we have to break the available space into the part that is dedicated to execution i.e. calculations and processing, and the part that is dedicated to storage.
 
 Getting this split right is actually quite tricky. You need to have enough space to store the results of previous calculations. However you also need to have enough space to make new calculations.
 
 If you wish to take control these parameters you can pass them to the constructor:
 
 ```python
-cluster.fomr_defaults(
+cluster.from_defaults(
     # other params...
     cluster_name="my_cluster",
-    # memory parameters
+    # memory params...
     spark_memory_fraction=0.75,
     spark_memory_storage_fraction=0.5,
 )
@@ -234,7 +237,7 @@ The motivation behind this repository is opinionated. The functions in this repo
 A *transform* is a function which takes in a `DataFrame` (or RDD) and spits out another `DataFrame`. In other words it has the following signature:
 
 ```python
-from pyspark.sql  import DataFrame
+from pyspark.sql import DataFrame
 
 def identity_transform(df: DataFrame) -> DataFrame:
     """A transform that takes in a dataframe 
@@ -248,25 +251,30 @@ A pipe is a way of chaining transforms together into complex patterns.
 As a simple example imagine we create a dataframe, then select a single column, then drop duplicates, and finally convert the dataframe to a list of tuples.
 
 ```python
-from cytoolz import pipe
-from functools import partial
-
+from cytoolz import pipe, partial
 from pyspark_tooling.dataframe import select_cols, deduplicate, to_tuples
 
 data = [
     ('a', 1),
-    ('a', 1),
+    ('a', 2),
+    ('b', 1),
     ('b', 2),
+    ('b', 3),
     ('c', 3),
     ('c', 4)
 ]
 
 df = spark.createDataFrame(data, ['key', 'value'])
 
+
 res = pipe(
+    # the first argument must be the dataframe that is going to be piped
     df,
+    # return a new dataframe with only a single column
     partial(select_cols, ['key']),
+    # deduplicate this new dataframe
     dedeuplicate,
+    # convert the dataframe into python tuples
     to_tuples,
 )
 
