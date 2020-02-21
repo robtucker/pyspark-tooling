@@ -4,8 +4,8 @@ from pyspark.sql.types import StructType, StructField, StringType, ArrayType
 import pyspark.sql.functions as F
 
 from tests import base
-from grada_pyspark_utils import arrays
-from grada_pyspark_utils.dataframe import to_tuples, to_dicts
+from pyspark_tooling import arrays
+from pyspark_tooling.dataframe import to_tuples, to_dicts
 
 
 # @pytest.mark.focus

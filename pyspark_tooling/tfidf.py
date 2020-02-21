@@ -1,19 +1,19 @@
 from cytoolz import pipe, partial
 from pyspark.sql import DataFrame
 
-from app.nlp.tokens import (
+from pyspark_tooling.tokens import (
     fill_nulls_with_empty_string,
     rm_empty_strings_from_tokens,
     tokenize_words,
     character_ngrams,
 )
-from app.nlp.vectors import (
+from pyspark_tooling.vectors import (
     term_frequency_vectors,
     tfidf_vectors,
     normalize_vectors,
     sparse_vector_indices,
 )
-from grada_pyspark_utils.dataframe import drop_cols
+from pyspark_tooling.dataframe import drop_cols
 
 
 def token_vectors_pipeline(

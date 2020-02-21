@@ -3,8 +3,8 @@ from functools import partial
 
 from pyspark.sql import Window
 
-from grada_pyspark_utils import strings
-from grada_pyspark_utils.dataframe import to_tuples, to_dicts
+from pyspark_tooling import strings
+from pyspark_tooling.dataframe import to_tuples, to_dicts
 
 from tests import base
 

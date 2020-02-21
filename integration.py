@@ -1,6 +1,6 @@
 import os
-from grada_pyspark_utils.emr import EMR
-from grada_pyspark_utils.timestamp import format_timestamp, utcnow
+from pyspark_tooling.emr import EMR
+from pyspark_tooling.timestamp import format_timestamp, utcnow
 
 
 class IntegrationTest:

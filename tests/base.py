@@ -5,8 +5,8 @@ import uuid
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 
-from grada_pyspark_utils import validators
-from grada_pyspark_utils.dataframe import to_dicts
+from pyspark_tooling import validators
+from pyspark_tooling.dataframe import to_dicts
 
 
 class BaseTest:
@@ -33,6 +33,10 @@ class BaseTest:
     def validate_schema(self, df: DataFrame, schema, verbose=False):
         """Confirm the dataframe matches an exact schema"""
         validators.validate_schema(df, schema, verbose=verbose)
+
+    def validate_to_decimal_places(self, a: list, b: list, decimal_places=6):
+        for a1, b1 in zip(a, b):
+            assert round(a1, decimal_places) == round(b1, decimal_places)
 
     def wipe_folder(self, path: str):
         """Wipe the given folder"""

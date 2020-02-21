@@ -2,15 +2,15 @@ import pytest
 from pyspark.sql import SQLContext
 from pyspark.ml.linalg import SparseVector
 
-from app.nlp import tokens, pipelines
+from pyspark_tooling import tokens, tfidf
 from tests import base
-from grada_pyspark_utils.dataframe import to_tuples
+from pyspark_tooling.dataframe import to_tuples
 
 
 # @pytest.mark.focus
 @pytest.mark.nlp
-class TestPipelines(base.BaseTest):
-    """Test pipelines for creating NLP vectors"""
+class TestTfidf(base.BaseTest):
+    """Test pipelines for creating tfidf vectors"""
 
     @pytest.mark.usefixtures("spark")
     def test_token_vectors_pipeline(self, spark: SQLContext):
@@ -24,7 +24,7 @@ class TestPipelines(base.BaseTest):
         ]
 
         raw = spark.createDataFrame(input_data, ["text"])
-        res = pipelines.token_vectors_pipeline("text", "vectors", raw)
+        res = tfidf.token_vectors_pipeline("text", "vectors", raw)
 
         actual = to_tuples(res.select("vectors"))
 
@@ -64,7 +64,7 @@ class TestPipelines(base.BaseTest):
 
         raw = spark.createDataFrame(input_data, ["text"])
 
-        res = pipelines.token_vectors_pipeline(
+        res = tfidf.token_vectors_pipeline(
             "text", "vectors", raw, stemmer_func=tokens.porter_tokens
         )
 
@@ -103,7 +103,7 @@ class TestPipelines(base.BaseTest):
             (None,),
         ]
         raw = spark.createDataFrame(input_data, ["text"])
-        res = pipelines.tf_ngrams_pipeline("text", "vectors", raw)
+        res = tfidf.tf_ngrams_pipeline("text", "vectors", raw)
 
         actual = [i[0] for i in to_tuples(res.select("vectors"))]
 
@@ -135,7 +135,7 @@ class TestPipelines(base.BaseTest):
             (None,),
         ]
         raw = spark.createDataFrame(input_data, ["text"])
-        res = pipelines.tfidf_vectors_pipeline("text", "vectors", raw)
+        res = tfidf.tfidf_vectors_pipeline("text", "vectors", raw)
 
         actual = [i[0] for i in to_tuples(res.select("vectors"))]
 

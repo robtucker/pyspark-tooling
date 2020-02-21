@@ -5,7 +5,7 @@ from pyspark.mllib.linalg import Vectors as MllibVectors
 from pyspark.ml.linalg import Vectors
 from pyspark.mllib.linalg.distributed import IndexedRowMatrix, BlockMatrix
 
-from app.nlp import matrix
+from pyspark_tooling import matrix
 from tests import base
 
 

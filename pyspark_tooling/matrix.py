@@ -9,7 +9,7 @@ from pyspark.mllib.linalg.distributed import (
     IndexedRowMatrix,
 )
 
-from grada_logger import log
+from pyspark_tooling.logger import log
 
 
 def df_to_indexed_row_matrix(row_number_col: str, vector_col: str, df: DataFrame):

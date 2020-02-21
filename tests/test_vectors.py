@@ -3,9 +3,9 @@ import numpy as np
 from pyspark.sql import SQLContext
 from pyspark.ml.linalg import Vectors
 
-from app.nlp import vectors
+from pyspark_tooling import vectors
 from tests import base
-from grada_pyspark_utils.dataframe import to_tuples
+from pyspark_tooling.dataframe import to_tuples
 
 
 # @pytest.mark.focus
@@ -95,7 +95,7 @@ class TestVectors(base.BaseTest):
         magnitudes = [np.linalg.norm(v) for v in vals]
         expected = [1.0 for _ in range(len(magnitudes))]
         # some magnitudes migth come out as 0.999999 etc
-        self._validate_to_decimal_places(magnitudes, expected)
+        self.validate_to_decimal_places(magnitudes, expected)
 
     @pytest.mark.usefixtures("spark")
     def test_normalize_sparse_vectors(self, spark: SQLContext):
@@ -122,7 +122,7 @@ class TestVectors(base.BaseTest):
         magnitudes = [np.linalg.norm(v) for v in vals]
         expected = [1.0 for _ in range(len(magnitudes))]
         # some magnitudes migth come out as 0.999999 etc
-        self._validate_to_decimal_places(magnitudes, expected)
+        self.validate_to_decimal_places(magnitudes, expected)
 
     @pytest.mark.usefixtures("spark")
     def test_sparse_vector_indices(self, spark: SQLContext):

@@ -1,7 +1,7 @@
 import pytest
 import pytz
 
-from grada_pyspark_utils import dataframe, timestamp
+from pyspark_tooling import dataframe, timestamp
 
 from tests import base
 

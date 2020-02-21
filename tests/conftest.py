@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 from pyspark.sql import SQLContext
 
-from grada_pyspark_utils.spark import get_local_conf, get_sql_context
+from pyspark_tooling.spark import get_local_conf, get_sql_context
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -1,6 +1,6 @@
 # import pytest
 
-from grada_pyspark_utils import plan
+from pyspark_tooling import plan
 from tests import base
 
 

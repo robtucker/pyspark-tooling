@@ -33,6 +33,7 @@ venv:
 
 reqs: 
 	. ./.venv/bin/activate && pip install -r requirements-dev.txt
+	python -m spacy download $(SPACY_MODEL_VERSION)
 
 
 integration:
@@ -49,5 +50,5 @@ test-focus:
 
 fmt:
 	black .
-	flake8 ./grada_pyspark_utils
+	flake8 ./pyspark_tooling
 	flake8 ./tests

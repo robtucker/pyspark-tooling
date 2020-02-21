@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pyspark.sql import DataFrame, Column, Row, Window
 import pyspark.sql.functions as F
-from grada_pyspark_utils.types import ColumnList
+from pyspark_tooling.types import ColumnList
 
 
 def to_lists(df: DataFrame) -> list:

@@ -3,7 +3,7 @@ import pytest
 import pyspark.sql.functions as F
 from pyspark.sql.types import Row, StructType, StructField, StringType
 
-from grada_pyspark_utils import dataframe
+from pyspark_tooling import dataframe
 
 from tests import base
 

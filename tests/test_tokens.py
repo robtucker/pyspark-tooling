@@ -2,9 +2,8 @@ import pytest
 from pyspark.sql import SQLContext
 from pyspark.sql.types import ArrayType, StringType, StructField, StructType
 
-from app.nlp import tokens
-from app.schema import schema
-from grada_pyspark_utils.dataframe import to_tuples
+from pyspark_tooling import tokens
+from pyspark_tooling.dataframe import to_tuples
 from tests import base
 
 
@@ -103,9 +102,10 @@ class TestTokens(base.BaseTest):
 
     @pytest.mark.usefixtures("spark")
     def test_porter_stemmer(self, spark: SQLContext):
-        raw = self._get_stemmer_input(spark)
+        input_col = "tokens"
         output_col = "res"
-        df = tokens.porter_tokens("tokens", output_col, raw)
+        raw = self._get_stemmer_input(spark, input_col)
+        df = tokens.porter_tokens(input_col, output_col, raw)
 
         expected = [
             (["I", "may", "be", "use"],),
@@ -117,9 +117,10 @@ class TestTokens(base.BaseTest):
 
     @pytest.mark.usefixtures("spark")
     def test_lancaster_stemmer(self, spark: SQLContext):
-        raw = self._get_stemmer_input(spark)
+        input_col = "tokens"
         output_col = "res"
-        df = tokens.lancaster_tokens("tokens", output_col, raw)
+        raw = self._get_stemmer_input(spark, input_col)
+        df = tokens.lancaster_tokens(input_col, output_col, raw)
 
         expected = [
             (["i", "may", "be", "us"],),
@@ -131,9 +132,10 @@ class TestTokens(base.BaseTest):
 
     @pytest.mark.usefixtures("spark")
     def test_snowball_stemmer(self, spark: SQLContext):
-        raw = self._get_stemmer_input(spark)
+        input_col = "tokens"
         output_col = "res"
-        df = tokens.snowball_tokens(schema.PRODUCT_NAME_TOKENS, output_col, raw)
+        raw = self._get_stemmer_input(spark, input_col)
+        df = tokens.snowball_tokens(input_col, output_col, raw)
 
         expected = [
             (["i", "may", "be", "use"],),
@@ -165,14 +167,12 @@ class TestTokens(base.BaseTest):
 
         self._validate_expected_values(res, ["text", "cleaned"], expected_values)
 
-    def _get_stemmer_input(self, spark: SQLContext):
+    def _get_stemmer_input(self, spark: SQLContext, input_col: str):
         data = [
             (["I", "may", "be", "using"],),
             (["a", "simplistic", "stemming", "algorithm"],),
             (["but", "the", "results", "are", "great"],),
         ]
-        s = StructType(
-            [StructField(schema.PRODUCT_NAME_TOKENS, ArrayType(StringType()))]
-        )
+        s = StructType([StructField(input_col, ArrayType(StringType()))])
 
         return spark.createDataFrame(data, s)

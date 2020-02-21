@@ -1,8 +1,9 @@
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType
+from typing import List
 
-from grada_pyspark_utils.dataframe import to_tuples
-from grada_pyspark_utils.exceptions import DataFrameException, SchemaException
+from pyspark_tooling.dataframe import to_tuples
+from pyspark_tooling.exceptions import DataFrameException, SchemaException
 
 
 def validate_values(
@@ -130,3 +131,89 @@ def validate_schema(df: DataFrame, schema, verbose=False):
             raise SchemaException(
                 f"Mismatching struct field. Received {actual}. Expected {expected}"
             )
+
+
+
+class Validator:
+    """Validator base class"""
+
+    def validate_str(self, s: str, allow_nulls=False):
+        if allow_nulls and s is None:
+            return s
+
+        if not isinstance(s, str) or len(s) == 0:
+            raise ValueError("not a valid str")
+        return s
+
+    def validate_int(self, i: int, allow_zero: bool = False, allow_nulls=False):
+        if allow_nulls and i is None:
+            return i
+
+        if not isinstance(i, int):
+            raise ValueError("not a valid int")
+
+        if not allow_zero and (i == 0):
+            raise ValueError("int cannot be 0")
+
+        return i
+
+    def validate_float(self, i: int, allow_zero: bool = False, allow_nulls=False):
+        if allow_nulls and i is None:
+            return i
+
+        if not isinstance(i, float):
+            raise ValueError("not a valid float")
+
+        if not allow_zero and (i == 0):
+            raise ValueError("float cannot be 0")
+
+        return i
+
+    def validate_numeric(self, i: int, allow_zero: bool = False, allow_nulls=False):
+        if allow_nulls and i is None:
+            return i
+
+        if not isinstance(i, int) and not isinstance(i, float):
+            raise ValueError("not a valid int or float")
+
+        if not allow_zero and ((i == 0) or (i == 0.0)):
+            raise ValueError("number cannot be 0")
+
+        return i
+
+    def validate_bool(self, i: int):
+        if not isinstance(i, bool):
+            raise ValueError("not a valid bool")
+        return i
+
+    def validate_list(self, l: List[str], of_type=None, allow_nulls=False):
+        if allow_nulls and l is None:
+            return l
+        if not isinstance(l, (list, tuple)):
+            raise ValueError("not a valid list or tuple")
+
+        if of_type:
+            for i in l:
+                if not isinstance(i, of_type):
+                    raise ValueError(f"list item is not of type {of_type}")
+        return l
+
+    def validate_dict(self, d: dict, key_type=None, value_type=None, allow_nulls=False):
+        if allow_nulls and d is None:
+            return d
+
+        if not isinstance(d, dict):
+            raise ValueError("not a valid dict")
+
+        if key_type:
+            for i in d.keys():
+                if not isinstance(i, key_type):
+                    raise ValueError(f"dict key is not of type {key_type}")
+
+        if value_type:
+            for i in d.values():
+                if not isinstance(i, value_type):
+                    raise ValueError(f"dict value is not of type {value_type}")
+
+        return d
+

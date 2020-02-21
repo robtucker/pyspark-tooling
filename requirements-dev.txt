@@ -3,9 +3,12 @@
 black
 boto3
 coverage
+cytoolz
 flake8
 ipdb
 ipython
+jinja2
+nltk
 pandas
 psycopg2-binary
 pylint
@@ -16,6 +19,8 @@ python-dateutil
 python-dotenv
 pytz>=2019.2
 PyYAML
+spacy
+structlog
 tox
 twine
 Unidecode>=1.1.1

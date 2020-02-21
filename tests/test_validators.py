@@ -10,9 +10,9 @@ from pyspark.sql.types import (
 )
 
 from tests import base
-from grada_pyspark_utils import validators
-from grada_pyspark_utils.dataframe import to_tuples
-from grada_pyspark_utils.exceptions import DataFrameException, SchemaException
+from pyspark_tooling import validators
+from pyspark_tooling.dataframe import to_tuples
+from pyspark_tooling.exceptions import DataFrameException, SchemaException
 
 
 # @pytest.mark.focus

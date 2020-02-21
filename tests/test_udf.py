@@ -1,6 +1,6 @@
 import pytest
 
-from app.nlp import udf_funcs
+from pyspark_tooling import udf_funcs
 from tests import base
 
 

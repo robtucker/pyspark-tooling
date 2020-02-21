@@ -2,7 +2,7 @@ from pyspark import SparkContext
 from pyspark.sql import DataFrame
 from pyspark.sql.types import DataType
 
-from grada_pyspark_utils.validators import validate_schema
+from pyspark_tooling.validators import validate_schema
 
 
 def read_csv(spark: SparkContext, path: str, schema=None):

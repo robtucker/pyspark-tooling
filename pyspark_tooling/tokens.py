@@ -5,7 +5,7 @@ from pyspark.ml.feature import NGram, StopWordsRemover, Tokenizer
 from pyspark.sql import DataFrame
 from pyspark.sql.types import ArrayType, StringType
 
-from grada_pyspark_utils.arrays import remove_empty_strings
+from pyspark_tooling.arrays import remove_empty_strings
 
 
 def tokenize_words(input_col: str, output_col: str, df: DataFrame):

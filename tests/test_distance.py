@@ -2,10 +2,8 @@ import pytest
 from pyspark.sql import SQLContext
 from pyspark.ml.linalg import Vectors
 
-from app.nlp import distance
-from app.config import Config
-from app.features.spacy import Spacy
-from grada_pyspark_utils.dataframe import to_dicts, to_tuples
+from pyspark_tooling import distance, spacy
+from pyspark_tooling.dataframe import to_dicts, to_tuples
 from tests import base
 
 
@@ -52,25 +50,35 @@ class TestDistance(base.BaseTest):
 
         actual = [i[0] for i in to_tuples(res.select("col_c"))]
         expected = [0.0, 0.0, 1.0, 1.0]
-        self._validate_to_decimal_places(actual, expected, decimal_places=6)
+        self.validate_to_decimal_places(actual, expected, decimal_places=6)
 
     @pytest.mark.usefixtures("spark", "conf")
-    def test_spacy_cosine_similarity(
-        self, spark: SQLContext, conf: Config, spacy: Spacy
-    ):
+    def test_spacy_cosine_similarity(self, spark: SQLContext):
         """Confirm that the pyspark cosine calculations are
         the same as the spacy cosine calculations"""
 
-        primary_col = "primary_vectors"
-        secondary_col = "secondary_vectors"
-        output_col = "res"
+        id_col = "document_id"
+        text_col = "document_text"
+        primary_col = "primary_col"
+        secondary_col = "secondary_col"
+        output_col = "output_col"
 
-        nlp = spacy.get_spacy()
+        data = [
+            (0, "ale"),
+            (1, "rum"),
+            (2, "mojito"),
+            (3, "beer"),
+            (4, "lager"),
+            (5, "vodka"),
+        ]
 
-        texts = ["ale", "rum", "mojito", "beer", "lager", "vodka"]
-        docs = list(nlp.pipe(texts))
+        df = spark.createDataFrame(data, [id_col, text_col])
+        docs = spacy.get_spacy_docs(
+            id_col, text_col, df, spacy_model_version="en_core_web_sm"
+        )
 
-        vectors = [Vectors.dense(doc.vector.tolist()) for doc in docs]
+        vectors = spacy.extract_document_vectors(docs)
+
         input_data = []
         for i in range(len(vectors)):
             input_data.append((vectors[0], vectors[i]))
@@ -83,7 +91,7 @@ class TestDistance(base.BaseTest):
         expected = [docs[0].similarity(doc) for doc in docs]
 
         # soacy and pyspark must give the same value to at least 6 decimal places
-        self._validate_to_decimal_places(actual, expected, decimal_places=6)
+        self.validate_to_decimal_places(actual, expected, decimal_places=6)
 
     @pytest.mark.usefixtures("spark")
     def test_strings_jaccard_index(self, spark: SQLContext):

@@ -3,7 +3,7 @@ import uuid
 import pandas as pd
 from zipfile import ZipFile
 
-from grada_pyspark_utils.filesystem import EmrFilesystem
+from pyspark_tooling.filesystem import EmrFilesystem
 from tests import base
 
 CSV_DATA = """
