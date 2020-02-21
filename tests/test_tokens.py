@@ -30,7 +30,7 @@ class TestTokens(base.BaseTest):
             ([""],),
         ]
 
-        self._validate_expected_values(res, ["tokens"], expected_values)
+        self.validate_values(res, ["tokens"], expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_string_to_character_array(self, spark: SQLContext):
@@ -46,7 +46,7 @@ class TestTokens(base.BaseTest):
 
         expected_cols = ["text", "tokenised_characters"]
 
-        self._validate_expected_values(df_tokenised, expected_cols, expected_values)
+        self.validate_values(df_tokenised, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_ngrams(self, spark: SQLContext):
@@ -64,22 +64,28 @@ class TestTokens(base.BaseTest):
         ]
 
         expected_cols = ["tokens", "ngrams"]
-        self._validate_expected_values(df, expected_cols, expected_values)
+        self.validate_values(df, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_character_ngrams(self, spark):
         n = 3
-        data = [("Sainsbury's Chocolate Cake",), ("Don't panic!",), ("",), (None,)]
+        data = [("Chocolate Cake",), ("Don't panic!",), ("",), (None,)]
 
-        df = spark.createDataFrame(data, ["text"])
-        res = tokens.character_ngrams("text", "trigrams", df, n=n)
+        raw = spark.createDataFrame(data, ["text"])
+        df = tokens.character_ngrams("text", "trigrams", raw, n=n)
 
-        expected = [
-            (i[0], [i[0][j : j + n] for j in range(0, len(i[0], n))] if i[0] else None)
+        expected_values = [
+            (
+                i[0],
+                [i[0][j : j + n] for j in range(0, len(i[0]) - (n - 1))]
+                if isinstance(i[0], str)
+                else None,
+            )
             for i in data
         ]
+        expected_cols = ["text", "trigrams"]
 
-        assert actual == expected
+        self.validate_values(df, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_sort_tokens(self, spark: SQLContext):
@@ -98,7 +104,7 @@ class TestTokens(base.BaseTest):
             ),
         ]
 
-        self._validate_expected_values(df, [in_col, out_col], expected_values)
+        self.validate_values(df, [in_col, out_col], expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_porter_stemmer(self, spark: SQLContext):
@@ -154,7 +160,7 @@ class TestTokens(base.BaseTest):
 
         expected_values = [a + b for a, b in zip(input_data, [("a",), ("",)])]
 
-        self._validate_expected_values(res, ["text", "filled"], expected_values)
+        self.validate_values(res, ["text", "filled"], expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_rm_empty_strings_from_tokens(self, spark: SQLContext):
@@ -165,7 +171,7 @@ class TestTokens(base.BaseTest):
 
         expected_values = [a + b for a, b in zip(input_data, [(["a"],), ([],), ([],)])]
 
-        self._validate_expected_values(res, ["text", "cleaned"], expected_values)
+        self.validate_values(res, ["text", "cleaned"], expected_values)
 
     def _get_stemmer_input(self, spark: SQLContext, input_col: str):
         data = [

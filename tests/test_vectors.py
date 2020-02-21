@@ -39,7 +39,7 @@ class TestVectors(base.BaseTest):
             )
         ]
 
-        self._validate_expected_values(res, ["text", "vectors"], expected_values)
+        self.validate_values(res, ["text", "vectors"], expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_tfidf_vectors(self, spark: SQLContext):
@@ -78,7 +78,7 @@ class TestVectors(base.BaseTest):
             ),
         ]
 
-        self._validate_expected_values(res.select("tfidf"), ["tfidf"], expected)
+        self.validate_values(res.select("tfidf"), ["tfidf"], expected)
 
     @pytest.mark.usefixtures("spark")
     def test_normalize_dense_vectors(self, spark: SQLContext):
@@ -147,4 +147,4 @@ class TestVectors(base.BaseTest):
         ]
 
         expected_cols = input_cols + ["indices"]
-        self._validate_expected_values(res, expected_cols, expected_values)
+        self.validate_values(res, expected_cols, expected_values)

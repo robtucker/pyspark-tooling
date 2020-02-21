@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from pyspark.sql import SQLContext
 
+from pyspark_tooling.logger import configure, log
 from pyspark_tooling.spark import get_local_conf, get_sql_context
 
 
@@ -28,6 +29,7 @@ def configure_logs():
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
+    configure(env="prod", service_name="tooling_test", level=logging.NOTSET)
 
 
 @pytest.fixture(scope="session")

@@ -67,13 +67,6 @@ class BaseTest:
     def _get_transformed_data(self, df: DataFrame, col_name: str):
         return [i[col_name] for i in to_dicts(df)]
 
-    def _validate_saved_file_count(
-        self, path: str, min_file_count: int, extension=".parquet"
-    ):
-        """Validate that the number of files meets the minimum number of expected files"""
-        files = self._list_files(path, extension=extension)
-        assert len(files) >= min_file_count
-
     def _list_files(self, path: str, extension=".parquet"):
         return list(filter(lambda f: f.endswith(extension), os.listdir(path)))
 

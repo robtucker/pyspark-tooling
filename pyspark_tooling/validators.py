@@ -133,7 +133,6 @@ def validate_schema(df: DataFrame, schema, verbose=False):
             )
 
 
-
 class Validator:
     """Validator base class"""
 
@@ -216,4 +215,3 @@ class Validator:
                     raise ValueError(f"dict value is not of type {value_type}")
 
         return d
-

@@ -29,7 +29,7 @@ class TestDistance(base.BaseTest):
         expected_values = [a + (b,) for a, b in zip(input_data, distances)]
         expected_cols = input_cols + [output_col]
 
-        self._validate_expected_values(res, expected_cols, expected_values)
+        self.validate_values(res, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_cosine_similarity(self, spark: SQLContext):
@@ -115,7 +115,7 @@ class TestDistance(base.BaseTest):
         expected_values = [(a + (b,)) for a, b in zip(input_data, distances)]
         expected_cols = input_cols + [output_col]
 
-        self._validate_expected_values(res, expected_cols, expected_values)
+        self.validate_values(res, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_integers_jaccard_index(self, spark: SQLContext):
@@ -139,7 +139,7 @@ class TestDistance(base.BaseTest):
         expected_values = [(a + (b,)) for a, b in zip(input_data, distances)]
         expected_cols = input_cols + [output_col]
 
-        self._validate_expected_values(res, expected_cols, expected_values)
+        self.validate_values(res, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_edit_distance(self, spark: SQLContext):
@@ -163,4 +163,4 @@ class TestDistance(base.BaseTest):
         expected_values = [a + (b,) for a, b in zip(input_data, distances)]
         expected_cols = input_cols + [output_col]
 
-        self._validate_expected_values(res, expected_cols, expected_values)
+        self.validate_values(res, expected_cols, expected_values)

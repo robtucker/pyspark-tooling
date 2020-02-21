@@ -143,7 +143,7 @@ class TestMatrix(base.BaseTest):
         )
         res = df.orderBy("p_id", "s_id")
         expected_cols = ["p_id", "s_id", "output"]
-        self._validate_expected_values(res, expected_cols, expected_values)
+        self.validate_values(res, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_dense_dot_product_cross_join(self, spark: SQLContext):
@@ -194,7 +194,7 @@ class TestMatrix(base.BaseTest):
         )
         res = df.orderBy("p_id", "s_id")
         expected_cols = ["p_id", "s_id", "output"]
-        self._validate_expected_values(res, expected_cols, expected_values)
+        self.validate_values(res, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_dense_matrix_cross_join(self, spark: SQLContext):
@@ -245,7 +245,7 @@ class TestMatrix(base.BaseTest):
         res = df.orderBy("p_id", "s_id")
 
         expected_cols = ["p_id", "s_id", "output"]
-        self._validate_expected_values(res, expected_cols, expected_values)
+        self.validate_values(res, expected_cols, expected_values)
 
     @pytest.mark.usefixtures("spark")
     def test_jaccard_cross_join(self, spark: SQLContext):
