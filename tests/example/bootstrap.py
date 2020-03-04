@@ -7,7 +7,7 @@ _script = jinja2.Template(
 set -e -x
 # ----------------------------------------------------------------------
 #                    Bootstrap EMR cluster
-# ---------------------------------------------------------------------- 
+# ----------------------------------------------------------------------
 sudo python3 --version
 sudo python3 -m pip install boto3 awscli findspark numpy pandas pyarrow s3transfer pypandoc
 aws s3 cp {{s3_path}}/requirements.txt ./requirements.txt

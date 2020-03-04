@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 from pyspark.sql import SQLContext
 
-from pyspark_tooling.logger import configure, log
+from pyspark_tooling.logger import configure
 from pyspark_tooling.spark import get_local_conf, get_sql_context
 
 

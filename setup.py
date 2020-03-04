@@ -2,7 +2,7 @@
 
 import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -13,9 +13,12 @@ setup(
     name="pyspark-tooling",
     version="1.0.0",
     url="https://github.com/robtucker/pyspark-tooling.git",
-    packages=["pyspark_tooling"],
+    download_url="https://github.com/robtucker/pyspark-tooling/archive/v_01.tar.gz",
+    packages=find_packages(
+        include=["pyspark_tooling", "pyspark_tooling.*"], exclude=["tests"]
+    ),
     author="Robert Tucker",
-    author_email="robert@coderlab.co.uk",
+    author_email="rob@coderlab.co.uk",
     description="Pyspark utility functions",
     long_description=desc,
     long_description_content_type="text/markdown",
@@ -33,5 +36,6 @@ setup(
     ],
     include_package_data=True,
     platforms="any",
+    keywords=["pyspark"],
     zip_safe=False,
 )

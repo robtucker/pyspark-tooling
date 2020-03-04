@@ -104,10 +104,7 @@ class TestEMRIntegration:
             logs_path=f"{self.s3_path}/logs",
             minimum_memory_in_gb=32,
             minimum_vcpus=12,
-            env_vars={
-                "S3_PATH": self.s3_path,
-                "RUN_ID": self.run_id,
-            },
+            env_vars={"S3_PATH": self.s3_path, "RUN_ID": self.run_id},
             tags=[{"Key": "Costcentre", "Value": "integration_test"}],
             subnet_ids=os.environ["INTEGRATION_TEST_SUBNET_IDS"].split(","),
             ssh_key="emr_integration_test",

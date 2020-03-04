@@ -62,6 +62,6 @@ def with_spacy_document_vectors(
     # extract the document vectors as python lists
     document_vectors = extract_document_vectors(docs)
     # create a new dataframe from the python lists
-    vectors_df = spark.createDataFrame(document_vectors, [document_id_col, output_col],)
+    vectors_df = spark.createDataFrame(document_vectors, [document_id_col, output_col])
     # join the new dataframe back onto the original dataframe
     return df.join(vectors_df, how="inner", on=[document_id_col])

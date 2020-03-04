@@ -21,16 +21,13 @@ def configure(
     logger_name: str = DEFAULT_LOGGER_NAME,
 ):
     """Configure the structlogger
-    
     Run this function with the desired params at application startup
     """
     _level = get_log_level(level)
     _processors = get_processors(env, service_name, _level, processors)
 
     # configure python's native logger
-    logging.basicConfig(
-        format="%(message)s", stream=sys.stdout, level=_level,
-    )
+    logging.basicConfig(format="%(message)s", stream=sys.stdout, level=_level)
 
     structlog.configure(
         processors=_processors,
@@ -99,11 +96,7 @@ def get_processors(
         with_env = add_env(env)
         with_service_name = add_service_name(service_name)
 
-        additional_processors = [
-            add_log_level,
-            with_service_name,
-            with_env,
-        ]
+        additional_processors = [add_log_level, with_service_name, with_env]
 
         _processors = _processors + additional_processors + custom_processors
 

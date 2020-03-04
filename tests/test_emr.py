@@ -407,7 +407,7 @@ class TestCluster(base.BaseTest):
                 {
                     "Classification": "capacity-scheduler",
                     "Properties": {
-                        "yarn.scheduler.capacity.resource-calculator": "org.apache.hadoop.yarn.util.resource.DominantResourceCalculator"
+                        "yarn.scheduler.capacity.resource-calculator": "foo"
                     },
                 },
                 {

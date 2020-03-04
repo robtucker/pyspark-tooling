@@ -28,7 +28,7 @@ def ngrams(input_col: str, output_col: str, df: DataFrame, n: int = 3) -> DataFr
 
 def character_ngrams(input_col: str, output_col: str, df: DataFrame, n: int = 3):
     func = F.udf(
-        lambda x: [x[i : i + n] for i in range(len(x) - n + 1)]
+        lambda x: [x[i : (i + n)] for i in range(len(x) - n + 1)]
         if isinstance(x, str)
         else None,
         returnType=ArrayType(StringType()),
