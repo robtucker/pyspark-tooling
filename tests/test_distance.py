@@ -1,4 +1,5 @@
 import pytest
+import os
 from pyspark.sql import SQLContext
 from pyspark.ml.linalg import Vectors
 
@@ -52,7 +53,7 @@ class TestDistance(base.BaseTest):
         expected = [0.0, 0.0, 1.0, 1.0]
         self.validate_to_decimal_places(actual, expected, decimal_places=6)
 
-    @pytest.mark.usefixtures("spark", "conf")
+    @pytest.mark.usefixtures("spark")
     def test_spacy_cosine_similarity(self, spark: SQLContext):
         """Confirm that the pyspark cosine calculations are
         the same as the spacy cosine calculations"""
@@ -73,19 +74,21 @@ class TestDistance(base.BaseTest):
         ]
 
         df = spark.createDataFrame(data, [id_col, text_col])
+        df.show()
+
         docs = spacy.get_spacy_docs(
-            id_col, text_col, df, spacy_model_version="en_core_web_sm"
+            id_col, text_col, df, spacy_model_version=self.spacy_version()
         )
 
         vectors = spacy.extract_document_vectors(docs)
 
         input_data = []
         for i in range(len(vectors)):
-            input_data.append((vectors[0], vectors[i]))
+            input_data.append((vectors[0][1], vectors[i][1]))
 
         df = spark.createDataFrame(input_data, [primary_col, secondary_col])
-
         res = distance.cosine_similarity(primary_col, secondary_col, output_col, df)
+
 
         actual = [i[output_col] for i in to_dicts(res)]
         expected = [docs[0].similarity(doc) for doc in docs]
@@ -164,3 +167,6 @@ class TestDistance(base.BaseTest):
         expected_cols = input_cols + [output_col]
 
         self.validate_values(res, expected_cols, expected_values)
+
+    def spacy_version(self):
+        return os.environ["SPACY_MODEL_VERSION"]

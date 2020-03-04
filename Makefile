@@ -15,7 +15,7 @@ connect:
 	psql -h $(PGHOST) --port $(PGPORT) --username $(PGUSER) --dbname $(PGDATABASE)
 
 
-check:
+check: up
 	. ./.venv/bin/activate && \
 	python setup.py sdist && \
 	twine check dist/*.tar.gz && \
@@ -24,7 +24,7 @@ check:
 
 deploy:
 	python setup.py sdist
-	twine upload dist/*tar.gz --repository-url $(REPOSITORY_URL) -u ${PIP_UPLOAD_TOKEN} -p "" --skip-existing
+	twine upload dist/*tar.gz
 
 
 venv:

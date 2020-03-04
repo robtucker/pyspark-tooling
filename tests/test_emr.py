@@ -46,7 +46,7 @@ class TestInfrastructureConfig(base.BaseTest):
         instance_tuple = ("r5.12xlarge", 48, 384)
         # if we create a config with a minimum of 100gb memory
         config = InfrastructureConfig(
-            min_memory_in_gb=min_memory, spark_memory_fraction=spark_memory_fraction
+            minimum_memory_in_gb=min_memory, spark_memory_fraction=spark_memory_fraction
         )
         # spark memory including the so called user memory and reserved memory
         spark_memory = (min_memory * (1 + (1 - spark_memory_fraction))) + 0.3
@@ -61,7 +61,7 @@ class TestInfrastructureConfig(base.BaseTest):
         # the instance profile we are expecting
         instance_tuple = ("r5.24xlarge", 96, 768)
         # if we create a config with a minimum of 2000gb memory
-        config = InfrastructureConfig(min_memory_in_gb=2000)
+        config = InfrastructureConfig(minimum_memory_in_gb=2000)
         # spark memory including the so called user memory and reserved memory
         spark_memory = (min_memory * (1 + (1 - spark_memory_fraction))) + 0.3
         total_memory = math.ceil(spark_memory * 1.1)  # plus 10% for yarn

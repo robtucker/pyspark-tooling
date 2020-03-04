@@ -12,6 +12,10 @@ from pyspark_tooling.logger import log
 DOCUMENT_ID = "document_id"
 
 
+def get_spacy(spacy_model_version="en_core_web_lg"):
+    return _spacy.load(spacy_model_version)
+
+
 def get_spacy_docs(
     document_id_col: str,
     document_text_col: str,
@@ -24,22 +28,27 @@ def get_spacy_docs(
     # select both the document id (can be a row number for instance)
     # as well as the raw document text
     raw = to_tuples(df.select(F.col(document_id_col), F.col(document_text_col)))
+
     # load spacy
-    nlp = _spacy.load(spacy_model_version)
+    nlp = get_spacy(spacy_model_version)
+
     # each entry is a tuple of (text, context) where the context is a dictionary
-    raw_texts = [(a if isinstance(a, str) else "", {DOCUMENT_ID: b}) for a, b in raw]
+    raw_texts = [i if isinstance(i, str) else "" for _, i in raw]
 
     # use the spacy pipe method to process all the docs at once
-    docs = nlp.pipe(raw_texts)
+    docs = list(nlp.pipe(raw_texts))
 
-    for doc, context in docs:
-        # set the id as an "extension attribute" on each doc object
-        doc._.document_id = context[DOCUMENT_ID]
+    # set the id as an "extension attribute" on each doc object
+    Doc.set_extension(DOCUMENT_ID, default=None)
+
+    for i in range(len(raw_texts)):
+        docs[i]._.document_id = raw[i][0]
 
     return docs
 
 
 def extract_document_vectors(docs: List[Doc]):
+    """Extract the document vectors from the spacy docs"""
     return [
         (
             doc._.get(DOCUMENT_ID),
