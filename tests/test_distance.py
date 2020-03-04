@@ -74,7 +74,6 @@ class TestDistance(base.BaseTest):
         ]
 
         df = spark.createDataFrame(data, [id_col, text_col])
-        df.show()
 
         docs = spacy.get_spacy_docs(
             id_col, text_col, df, spacy_model_version=self.spacy_version()
@@ -88,7 +87,6 @@ class TestDistance(base.BaseTest):
 
         df = spark.createDataFrame(input_data, [primary_col, secondary_col])
         res = distance.cosine_similarity(primary_col, secondary_col, output_col, df)
-
 
         actual = [i[output_col] for i in to_dicts(res)]
         expected = [docs[0].similarity(doc) for doc in docs]

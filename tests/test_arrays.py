@@ -29,7 +29,7 @@ class TestArrayUtils(base.BaseTest):
 
         df = spark.createDataFrame(data, ["input"])
         res = df.withColumn("output", arrays.remove_empty_strings(F.col("input")))
-        res.show()
+
         expected = [a + b for a, b in zip(data, [(["foo", "bar"],), ([],), ([],)])]
 
         assert to_tuples(res) == expected
