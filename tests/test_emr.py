@@ -1,5 +1,6 @@
 import pytest
 import copy
+import math
 import random
 import uuid
 from datetime import datetime
@@ -39,25 +40,36 @@ class MockCluster(Cluster):
 # @pytest.mark.focus
 class TestInfrastructureConfig(base.BaseTest):
     def test_single_master_calculation(self):
+        min_memory = 100
+        spark_memory_fraction = 0.75
         # the instance profile we are expecting
-        instance_tuple = ("r5.4xlarge", 16, 128)
+        instance_tuple = ("r5.12xlarge", 48, 384)
         # if we create a config with a minimum of 100gb memory
-        config = InfrastructureConfig(minimum_spark_memory_in_gb=100)
-        # the actual minimum memory should include a 10% bonus for yarn
-        assert config.total_minimum_memory == 110
+        config = InfrastructureConfig(
+            min_memory_in_gb=min_memory, spark_memory_fraction=spark_memory_fraction
+        )
+        # spark memory including the so called user memory and reserved memory
+        spark_memory = (min_memory * (1 + (1 - spark_memory_fraction))) + 0.3
+        total_memory = math.ceil(spark_memory * 1.1)  # plus 10% for yarn
+        assert config.total_minimum_memory == total_memory
         # this can be satisfied by a single r5.4xlarge master node
         self.validate_infra(config, instance_tuple)
 
     def test_multi_core_calculation(self):
+        min_memory = 2000
+        spark_memory_fraction = 0.75
         # the instance profile we are expecting
         instance_tuple = ("r5.24xlarge", 96, 768)
         # if we create a config with a minimum of 2000gb memory
-        config = InfrastructureConfig(minimum_spark_memory_in_gb=2000)
+        config = InfrastructureConfig(min_memory_in_gb=2000)
+        # spark memory including the so called user memory and reserved memory
+        spark_memory = (min_memory * (1 + (1 - spark_memory_fraction))) + 0.3
+        total_memory = math.ceil(spark_memory * 1.1)  # plus 10% for yarn
         # the actual minimum memory should include a 10% bonus for yarn
-        assert config.total_minimum_memory == 2200
+        assert config.total_minimum_memory == total_memory
         # this can be satisfied by a 3 r5.24xlarge nodes
         assert config.master_instance_count == 1
-        assert config.core_instance_count == 2
+        assert config.core_instance_count == 3
         # validate the available memory and vcpu
         self.validate_infra(config, instance_tuple)
 
@@ -92,7 +104,7 @@ class TestInfrastructureConfig(base.BaseTest):
         spark_vcpu = num_executors * args["executor_cores"]
         # there is one vcpu for the hadoop daemon on each instance
         used_vcpus = spark_vcpu + args["driver_cores"] + num_instances
-        assert used_vcpus == total_vcpus
+        self.validate_is_within(used_vcpus, total_vcpus, 5)
 
     def validate_is_within(self, actual, expected, percent_margin):
         """The actual must be within a certain percent of the expected amount"""

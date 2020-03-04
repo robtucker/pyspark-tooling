@@ -8,8 +8,8 @@ from dateutil.tz import tzutc
 from enum import Enum
 from typing import List, Dict, Any
 
-from pyspark_tooling.validators import Validator
 from pyspark_tooling.logger import log
+from pyspark_tooling.validators import Validator
 
 
 # AWS default iam roles
@@ -61,6 +61,11 @@ class InstanceOptimization(Enum):
     storage = "storage"
 
 
+class DeployMode(Enum):
+    Client = "client"
+    Cluster = "cluster"
+
+
 class EMRException(Exception):
     pass
 
@@ -107,7 +112,7 @@ class InfrastructureConfig(Validator):
     def __init__(
         self,
         # how much memory will be required to hold the RDDs?
-        minimum_spark_memory_in_gb: int = 32,
+        minimum_memory_in_gb: int = 32,
         # optionally specify a minimum number of VCPUs
         minimum_vcpus: int = 6,
         # how many VCPUs should each executor have
@@ -116,6 +121,8 @@ class InfrastructureConfig(Validator):
         partitions_per_vcpu: int = 2,
         # what fraction of an executors memory is given to yarn in range (0, 1)
         yarn_memory_overhead_fraction: int = 0.1,
+        # of the memory given to spark how much is usable (not reserved for spark internals)
+        spark_memory_fraction: float = 0.75,
         # what type of instance should be used
         instance_optimization: InstanceOptimization = InstanceOptimization.memory,
         # how many executors should be set aside for the driver (usually 1)
@@ -125,8 +132,9 @@ class InfrastructureConfig(Validator):
         Choose either a minimum amount of memory or a minimum number of VCPUS,
         and this config class will select your infrastructure for you, ensuring
         that both requirements will be met"""
-        self.minimum_spark_memory_in_gb = self.validate_int(minimum_spark_memory_in_gb)
+        self.minimum_memory_in_gb = self.validate_int(minimum_memory_in_gb)
         self.minimum_vcpus = self.validate_int(minimum_vcpus)
+        self.spark_memory_fraction = self.validate_float(spark_memory_fraction)
         self.yarn_memory_overhead_fraction = self.validate_float(
             yarn_memory_overhead_fraction
         )
@@ -135,17 +143,37 @@ class InfrastructureConfig(Validator):
         self.instance_optimization = self.validate_str(instance_optimization.value)
         self.num_executors_for_driver = self.validate_int(num_executors_for_driver)
 
-        # the total minimum memory includes the memory allocated to yarn
-        yarn_memory = (
-            self.minimum_spark_memory_in_gb * self.yarn_memory_overhead_fraction
-        )
-        self.total_minimum_memory = math.ceil(
-            self.minimum_spark_memory_in_gb + yarn_memory
-        )
-
+        # calculate the memory requirements
+        self.set_total_minimum_memory()
         # calculate which instance type should be used
         self.set_instance_type(self.instance_optimization)
+        # choose the infrastructure
         self.calc_instance_counts()
+
+    def set_total_minimum_memory(self, spark_reserved_memory_in_gb: float = 0.3):
+        """Calculate how much memory is required including yarn and user memory"""
+        # spark user memory is mostly for storing internal metadata
+        spark_user_memory = self.minimum_memory_in_gb * (1 - self.spark_memory_fraction)
+
+        # spark memory
+        spark_memory = (
+            self.minimum_memory_in_gb
+            + spark_user_memory
+            + self.validate_float(spark_reserved_memory_in_gb)
+        )
+
+        # tht total minimum memory also includes the memory required by yarn
+        yarn_memory = spark_memory * self.yarn_memory_overhead_fraction
+
+        self.total_minimum_memory = math.ceil(spark_memory + yarn_memory)
+
+        log.debug(
+            "calculated minimum memory requirements",
+            spark_user_memory=spark_user_memory,
+            spark_memory=spark_memory,
+            yarn_memory=yarn_memory,
+            total_minimum_memory=self.total_minimum_memory,
+        )
 
     def set_instance_type(
         self, optimization: InstanceOptimization = InstanceOptimization.memory
@@ -172,8 +200,15 @@ class InfrastructureConfig(Validator):
         index = max([memory_index, vcpu_index])
 
         self.instance_type = instances[index][0]
-        self.memory_per_instance = instances[index][2]
         self.vcpus_per_instance = instances[index][1]
+        self.memory_per_instance = instances[index][2]
+
+        log.debug(
+            "calculated minimum memory requirements",
+            instance_type=self.instance_type,
+            vcpus_per_instance=self.vcpus_per_instance,
+            memory_per_instance=self.memory_per_instance,
+        )
 
     def calc_instance_counts(self, master_instance_count=1):
         """This is an opinionated configuration class that will assign
@@ -193,6 +228,13 @@ class InfrastructureConfig(Validator):
         self.total_instance_count = max([min_instances_memory, min_instances_vcpu, 1])
         self.master_instance_count = master_instance_count
         self.core_instance_count = self.total_instance_count - master_instance_count
+
+        log.debug(
+            "calculated instance counts",
+            total_instance_count=self.total_instance_count,
+            master_instance_count=self.master_instance_count,
+            core_instance_count=self.core_instance_count,
+        )
 
     def effective_vcpus_per_instance(self):
         """The number of vcpus that come with the instance less
@@ -339,7 +381,7 @@ class Cluster(Validator):
         # custom jars required during execution
         jars: List[str] = None,
         # deploy in client or cluster mode
-        deploy_mode: str = "cluster",
+        deploy_mode: DeployMode = DeployMode.Client,
         # the fraction of memory given to spark (the rest is "user" memory)
         spark_memory_fraction: float = 0.75,
         # of the memory given to spark, how much is reserved for storage
@@ -411,9 +453,11 @@ class Cluster(Validator):
         self.applications = self.validate_list(applications)
         self.tags = self.validate_list(tags)
         self.jars = self.validate_list(jars, allow_nulls=True)
-        self.deploy_mode = self.validate_str(deploy_mode)
-        self.spark_memory_fraction = spark_memory_fraction
-        self.spark_memory_storage_fraction = spark_memory_storage_fraction
+        self.deploy_mode = self.validate_str(deploy_mode.value)
+        self.spark_memory_fraction = self.validate_float(spark_memory_fraction)
+        self.spark_memory_storage_fraction = self.validate_float(
+            spark_memory_storage_fraction
+        )
 
         self.ssh_key = self.validate_str(ssh_key, allow_nulls=True)
         self.subnet_ids = self.validate_list(subnet_ids, allow_nulls=True)
@@ -447,10 +491,12 @@ class Cluster(Validator):
         logs_path: str,
         bootstrap_script_paths: List[str],
         env_vars: dict = {},
-        minimum_spark_memory_in_gb: int = 32,
+        minimum_memory_in_gb: int = 32,
         minimum_vcpus: int = 4,
         vcpus_per_executor: int = 5,
         partitions_per_vcpu: int = 2,
+        spark_memory_fraction: float = 0.75,
+        spark_memory_storage_fraction: float = 0.5,
         yarn_memory_overhead_fraction: int = 0.1,
         instance_optimization: InstanceOptimization = InstanceOptimization.memory,
         num_executors_for_driver: int = 1,
@@ -462,6 +508,7 @@ class Cluster(Validator):
         tags: dict = {},
         ssh_key: str = None,
         subnet_ids: List[str] = None,
+        deploy_mode: DeployMode = DeployMode.Client,
     ):
         """This function is a reduced subset of the arguments
         you can pass in to the main constructor, such that
@@ -469,10 +516,11 @@ class Cluster(Validator):
 
         # perform the default calculations
         config = InfrastructureConfig(
-            minimum_spark_memory_in_gb=minimum_spark_memory_in_gb,
+            minimum_memory_in_gb=minimum_memory_in_gb,
             minimum_vcpus=minimum_vcpus,
             vcpus_per_executor=vcpus_per_executor,
             partitions_per_vcpu=partitions_per_vcpu,
+            spark_memory_fraction=spark_memory_fraction,
             yarn_memory_overhead_fraction=yarn_memory_overhead_fraction,
             instance_optimization=instance_optimization,
             num_executors_for_driver=num_executors_for_driver,
@@ -491,6 +539,9 @@ class Cluster(Validator):
             tags=tags,
             ssh_key=ssh_key,
             subnet_ids=subnet_ids,
+            spark_memory_fraction=spark_memory_fraction,
+            spark_memory_storage_fraction=spark_memory_storage_fraction,
+            deploy_mode=deploy_mode,
             # add the infrastructure config
             **config.to_dict(),
         )
@@ -499,8 +550,8 @@ class Cluster(Validator):
         self,
         code_entrypoint_path: str,
         code_bundle_path: str,
-        synchronous=False,
         action_on_failure: ActionOnFailure = ActionOnFailure.TerminateCluster,
+        synchronous=False,
     ):
         """Create a new cluster and run the job flow"""
 

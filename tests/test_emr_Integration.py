@@ -102,7 +102,7 @@ class TestEMRIntegration:
             cluster_name="integration_test_cluster",
             bootstrap_script_paths=[f"{self.s3_path}/bootstrap.sh"],
             logs_path=f"{self.s3_path}/logs",
-            minimum_spark_memory_in_gb=32,
+            minimum_memory_in_gb=32,
             minimum_vcpus=12,
             env_vars={
                 "S3_PATH": self.s3_path,
