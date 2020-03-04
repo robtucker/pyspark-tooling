@@ -13,7 +13,7 @@ setup(
     name="pyspark-tooling",
     version="1.0.0",
     url="https://github.com/robtucker/pyspark-tooling.git",
-    download_url="https://github.com/robtucker/pyspark-tooling/archive/v_01.tar.gz",
+    download_url="https://github.com/robtucker/pyspark-tooling/archive/v1.0.tar.gz",
     packages=find_packages(
         include=["pyspark_tooling", "pyspark_tooling.*"], exclude=["tests"]
     ),
