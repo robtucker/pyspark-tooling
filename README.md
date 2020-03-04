@@ -157,7 +157,7 @@ These calculations are made according to the [AWS best practice guide](https://a
 There are some key parameters that you can pass to the `InfrastructureConfig` class constructor that will determine how your infrastructure is created. e.g
 
 ```python
-from grada_pyspark_utils.emr import InfrstructureConfig, InstanceOptimization
+from pyspark_tooling.emr import InfrstructureConfig, InstanceOptimization
 
 # the config class will perform your calculations
 infrastructure = InfrastructureConfig(
