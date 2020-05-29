@@ -16,6 +16,112 @@ from pyspark_tooling.exceptions import DataFrameException, SchemaException
 
 
 # @pytest.mark.focus
+class TestValidatorBaseClass(base.BaseTest):
+
+    def test_string_validation(self):
+        v = validators.Validator()
+
+        a = str(uuid.uuid4())
+        b = v.validate_str(a)
+        assert b == a
+
+        with pytest.raises(ValueError):
+            v.validate_str(0.1)
+
+        with pytest.raises(ValueError):
+            v.validate_str("")      
+
+        c = v.validate_str(None, allow_nulls=True)
+        assert c is None
+
+    def test_integer_validation(self):
+        v = validators.Validator()
+
+        a = random.randint(1, 100)
+        b = v.validate_int(a)
+        assert b == a
+
+        with pytest.raises(ValueError):
+            v.validate_int("foobar")
+
+        with pytest.raises(ValueError):
+            v.validate_int(0)
+
+        c = v.validate_int(None, allow_nulls=True)
+        assert c is None
+
+        d = v.validate_int(0, allow_zero=True)
+        assert d is 0
+
+    def test_float_validation(self):
+        v = validators.Validator()
+
+        a = random.uniform(1.0, 100.0)
+        b = v.validate_float(a)
+        assert b == a
+
+        with pytest.raises(ValueError):
+            v.validate_float("foobar")
+
+        with pytest.raises(ValueError):
+            v.validate_float(0)
+
+        c = v.validate_float(None, allow_nulls=True)
+        assert c is None
+
+        d = v.validate_float(0.0, allow_zero=True)
+        assert d is 0.0
+
+    def test_bool_validation(self):
+        v = validators.Validator()
+
+        a = random.choice([True, False])
+        b = v.validate_bool(a)
+        assert b == a
+
+        with pytest.raises(ValueError):
+            v.validate_bool("foobar")
+
+        with pytest.raises(ValueError):
+            v.validate_bool(0)
+
+    def test_list_validation(self):
+        v = validators.Validator()
+
+        a = list(range(10))
+        b = v.validate_list(a, of_type=int)
+        assert b == a
+
+        with pytest.raises(ValueError):
+            v.validate_list(a + [None], of_type=int)
+
+        with pytest.raises(ValueError):
+            v.validate_list(a + ["string not allowed"], of_type=int)
+
+        with pytest.raises(ValueError):
+            v.validate_list("not a list")
+
+        c = v.validate_list(None, allow_nulls=True)
+        assert c is None
+
+
+    def test_dictionary_validation(self):
+        v = validators.Validator()
+
+        a = {"foo": 1, "bar": 2}
+        b = v.validate_dict(a, key_type=str, value_type=int, allow_nulls=False)
+        assert b == a
+
+        with pytest.raises(ValueError):
+            c = a.update({"biz": None})
+            v.validate_dict(c, key_type=str, value_type=int, allow_nulls=False)
+
+        with pytest.raises(ValueError):
+            c = a.update({"biz": "str"})
+            v.validate_dict(c, key_type=str, value_type=int)
+
+
+# @pytest.mark.focus
 class TestValidatorUtils(base.BaseTest):
     @pytest.mark.usefixtures("spark")
     def test_mismatching_values(self, spark: SQLContext):
